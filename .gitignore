@@ -1,0 +1,9 @@
+checkpoints_isbi
+lightning_logs
+fqe_eff/init.ckpt
+.idea/Fundus_Quality_Evaluator.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/workspace.xml
