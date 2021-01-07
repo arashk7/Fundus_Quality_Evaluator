@@ -208,6 +208,8 @@ class FQEModel(pl.LightningModule):
         self.labels = []
         return {'log': {'test_loss': loss, 'test_epoch_acc': accuracy, 'test_epoch_qkappa': qkappa}}
 
+    def predict(self, x):
+        return self.model(x)
 
 class Dataset_ISBI(data.Dataset):
     def __init__(self, csv_path, images_path, transform=None):
@@ -371,10 +373,5 @@ if logger:
 else:
     trainer = pl.Trainer(gpus=1, limit_val_batches=limit_val_train, limit_train_batches=limit_val_train,
                          limit_test_batches=limit_val_train)
-
-print('>>>>>TRAIN KAGGLE Dataset')
-# model = pretrain_kaggledr(trainer, model, kaggledr_dataset_train, logger)
-print('>>>>>TRAIN APTOS Dataset')
-# model = pretrain_aptos(trainer, model, aptos_dataset_train, logger)
 print('>>>>>TRAIN ISBI Dataset')
 train_isbi(trainer, model, isbi_dataset_train, isbi_dataset_test, logger)
