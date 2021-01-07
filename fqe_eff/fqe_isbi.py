@@ -281,7 +281,7 @@ def train_isbi(trainer, model, dataset, dataset_test, logger):
             mode='min'
         )
         checkpoint_callback = ModelCheckpoint(
-            monitor='val_epoch_qkappa',
+            monitor='val_epoch_acc',
             filepath=chp_path + '/offline_' + exp_name + '_fold_' + str(fold),
             save_top_k=1,
             mode='max')
@@ -325,11 +325,11 @@ def train_isbi(trainer, model, dataset, dataset_test, logger):
         model.load_from_checkpoint(checkpoint_callback.best_model_path)
         result = trainer.test(model, test_loader)
 
-        kappa = result[0]['test_epoch_qkappa']
-        kappa = round(kappa, 3)
-        print('>>>>>>>>>>>>>>>>Test qkappa: ' + str(kappa))
+        acc = result[0]['test_epoch_acc']
+        acc = round(acc, 3)
+        print('>>>>>>>>>>>>>>>>Test acc: ' + str(acc))
 
-        trainer.save_checkpoint(chp_path + '/' + experiment_id + '_kappa_' + str(kappa) + '_fold_' + str(fold) + '.pt')
+        trainer.save_checkpoint(chp_path + '/' + experiment_id + '_acc_' + str(acc) + '_fold_' + str(fold) + '.pt')
 
 
 transform_train = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.RandomApply([
