@@ -308,14 +308,14 @@ def train_isbi(trainer, model, dataset, dataset_test, logger):
         val_sampler = SubsetRandomSampler(val_index)
 
         '''db loaders'''
-        train_loader = torch.utils.data.DataLoader(dataset,
+        train_loader = torch.utils.data.DataLoader(dataset, #num_workers= 16,
                                                    sampler=train_sampler,
                                                    batch_size=batch_size)
-        val_loader = torch.utils.data.DataLoader(dataset,
+        val_loader = torch.utils.data.DataLoader(dataset, #num_workers= 16,
                                                  sampler=val_sampler,
                                                  batch_size=batch_size)
 
-        test_loader = torch.utils.data.DataLoader(dataset_test,
+        test_loader = torch.utils.data.DataLoader(dataset_test, #num_workers= 16,
                                                   batch_size=batch_size)
 
         '''start training'''
