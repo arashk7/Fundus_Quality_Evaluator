@@ -89,7 +89,7 @@ class GeM(torch.nn.Module):
 class FQEModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
-        self.model = EfficientNet.from_pretrained('efficientnet-b' + str(efficientnet), num_classes=2, in_channels=3)
+        self.eff_model = EfficientNet.from_pretrained('efficientnet-b' + str(efficientnet), num_classes=2, in_channels=3)
         if gem_pool:
             in_size = 1280  # eff 0
             if efficientnet == 3:
@@ -118,13 +118,13 @@ class FQEModel(pl.LightningModule):
         x = x.float()
         if gem_pool:
 
-            x = self.model.extract_features(x)
+            x = self.eff_model.extract_features(x)
             x = self.gem_pooling(x)
             x = x.view(batch_size, -1)
             x = self.dropout(x)
             x = self.fc(x)
         else:
-            x = self.model(x)
+            x = self.eff_model(x)
         return x
 
     def training_step(self, batch, batch_idx):
@@ -264,14 +264,14 @@ class Dataset_ISBI(data.Dataset):
 
 
 def train_isbi(trainer, model, dataset, dataset_test, logger):
-    torch.save(model.model, "init.ckpt")
+    torch.save(model.eff_model, "init.ckpt")
 
     progressbar_callback = trainer.callbacks[1]
 
     '''KFolding'''
     kfold = KFold(num_fold, shuffle=True, random_state=1)
     for fold, (train_index, val_index) in enumerate(kfold.split(dataset)):
-        model.model = torch.load("init.ckpt")
+        model.eff_model = torch.load("init.ckpt")
         # trainer.restore_weights(model)
         early_stopping = EarlyStopping(
             monitor='val_loss',
@@ -331,47 +331,47 @@ def train_isbi(trainer, model, dataset, dataset_test, logger):
 
         trainer.save_checkpoint(chp_path + '/' + experiment_id + '_acc_' + str(acc) + '_fold_' + str(fold) + '.pt')
 
+if __name__ == "__main__":
+    transform_train = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.RandomApply([
+        torchvision.transforms.RandomRotation((-aug_rot, aug_rot)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(p=0.4)],
+        0.7), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                                          ])
 
-transform_train = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.RandomApply([
-    torchvision.transforms.RandomRotation((-aug_rot, aug_rot)),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(p=0.4)],
-    0.7), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-                                      ])
+    transform_test = transforms.Compose([transforms.Resize((img_size, img_size)),
+                                         transforms.ToTensor(),
+                                         transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                              std=[0.229, 0.224, 0.225])
+                                         ])
 
-transform_test = transforms.Compose([transforms.Resize((img_size, img_size)),
-                                     transforms.ToTensor(),
-                                     transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                          std=[0.229, 0.224, 0.225])
-                                     ])
+    '''Dataset'''
+    isbi_dataset_train = Dataset_ISBI(os.path.join(ISBI_TRAIN_PATH, 'merged_tr_vl.csv'),
+                                      ISBI_TRAIN_PATH,
+                                      transform=transform_train)
+    isbi_dataset_test = Dataset_ISBI(os.path.join(ISBI_TEST_PATH, 'Onsite-Challenge1-2-Evaluation_full.csv'),
+                                     ISBI_TEST_PATH,
+                                     transform=transform_test)
+    # aptos_dataset_train = Dataset_APTOS(os.path.join(APTOS_TRAIN_PATH, 'train.csv'),
+    #                                     os.path.join(APTOS_TRAIN_PATH, 'train_images'),
+    #                                     transform=transform_train)
+    # kaggledr_dataset_train = Dataset_KAGGLEDR(os.path.join(KAGGLEDR_TRAIN_PATH, 'trainLabels.csv'),
+    #                                           os.path.join(KAGGLEDR_TRAIN_PATH, 'train'),
+    #                                           transform=transform_train)
+    experiment_id=exp_name
+    model = FQEModel()
 
-'''Dataset'''
-isbi_dataset_train = Dataset_ISBI(os.path.join(ISBI_TRAIN_PATH, 'merged_tr_vl.csv'),
-                                  ISBI_TRAIN_PATH,
-                                  transform=transform_train)
-isbi_dataset_test = Dataset_ISBI(os.path.join(ISBI_TEST_PATH, 'Onsite-Challenge1-2-Evaluation_full.csv'),
-                                 ISBI_TEST_PATH,
-                                 transform=transform_test)
-# aptos_dataset_train = Dataset_APTOS(os.path.join(APTOS_TRAIN_PATH, 'train.csv'),
-#                                     os.path.join(APTOS_TRAIN_PATH, 'train_images'),
-#                                     transform=transform_train)
-# kaggledr_dataset_train = Dataset_KAGGLEDR(os.path.join(KAGGLEDR_TRAIN_PATH, 'trainLabels.csv'),
-#                                           os.path.join(KAGGLEDR_TRAIN_PATH, 'train'),
-#                                           transform=transform_train)
-experiment_id=exp_name
-model = FQEModel()
-
-trainer = None
-if logger:
-    neptune_logger = NeptuneLogger(
-        api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiZDEwMDVjZGQtNzNlOS00ZDNmLTlmMjYtNGNhMzk0NmMwZWFkIn0=",
-        project_name="arash.k/sandbox", experiment_name=exp_name)  # arash.k
-    trainer = pl.Trainer(gpus=1, limit_val_batches=limit_val_train, limit_train_batches=limit_val_train,
-                         limit_test_batches=limit_val_train,
-                         logger=neptune_logger)
-    experiment_id = neptune_logger.experiment.id
-else:
-    trainer = pl.Trainer(gpus=1, limit_val_batches=limit_val_train, limit_train_batches=limit_val_train,
-                         limit_test_batches=limit_val_train)
-print('>>>>>TRAIN ISBI Dataset')
-train_isbi(trainer, model, isbi_dataset_train, isbi_dataset_test, logger)
+    trainer = None
+    if logger:
+        neptune_logger = NeptuneLogger(
+            api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiZDEwMDVjZGQtNzNlOS00ZDNmLTlmMjYtNGNhMzk0NmMwZWFkIn0=",
+            project_name="arash.k/sandbox", experiment_name=exp_name)  # arash.k
+        trainer = pl.Trainer(gpus=1, limit_val_batches=limit_val_train, limit_train_batches=limit_val_train,
+                             limit_test_batches=limit_val_train,
+                             logger=neptune_logger)
+        experiment_id = neptune_logger.experiment.id
+    else:
+        trainer = pl.Trainer(gpus=1, limit_val_batches=limit_val_train, limit_train_batches=limit_val_train,
+                             limit_test_batches=limit_val_train)
+    print('>>>>>TRAIN ISBI Dataset')
+    train_isbi(trainer, model, isbi_dataset_train, isbi_dataset_test, logger)
