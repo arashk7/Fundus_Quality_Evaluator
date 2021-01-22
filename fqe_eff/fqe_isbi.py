@@ -89,7 +89,7 @@ class GeM(torch.nn.Module):
 class FQEModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
-        self.eff_model = EfficientNet.from_pretrained('efficientnet-b' + str(efficientnet), num_classes=2, in_channels=3)
+        self.model = EfficientNet.from_pretrained('efficientnet-b' + str(efficientnet), num_classes=2, in_channels=3)
         if gem_pool:
             in_size = 1280  # eff 0
             if efficientnet == 3:
@@ -118,13 +118,13 @@ class FQEModel(pl.LightningModule):
         x = x.float()
         if gem_pool:
 
-            x = self.eff_model.extract_features(x)
+            x = self.model.extract_features(x)
             x = self.gem_pooling(x)
             x = x.view(batch_size, -1)
             x = self.dropout(x)
             x = self.fc(x)
         else:
-            x = self.eff_model(x)
+            x = self.model(x)
         return x
 
     def training_step(self, batch, batch_idx):
@@ -264,14 +264,14 @@ class Dataset_ISBI(data.Dataset):
 
 
 def train_isbi(trainer, model, dataset, dataset_test, logger):
-    torch.save(model.eff_model, "init.ckpt")
+    torch.save(model.model, "init.ckpt")
 
     progressbar_callback = trainer.callbacks[1]
 
     '''KFolding'''
     kfold = KFold(num_fold, shuffle=True, random_state=1)
     for fold, (train_index, val_index) in enumerate(kfold.split(dataset)):
-        model.eff_model = torch.load("init.ckpt")
+        model.model = torch.load("init.ckpt")
         # trainer.restore_weights(model)
         early_stopping = EarlyStopping(
             monitor='val_loss',
@@ -322,6 +322,8 @@ def train_isbi(trainer, model, dataset, dataset_test, logger):
         trainer.fit(model, train_loader, val_loader)
         # print(checkpoint_callback.best_model_path)
         # trainer.restore(checkpoint_callback.best_model_path, on_gpu=True)
+        print(checkpoint_callback.best_model_path)
+
         model.load_from_checkpoint(checkpoint_callback.best_model_path)
         result = trainer.test(model, test_loader)
 

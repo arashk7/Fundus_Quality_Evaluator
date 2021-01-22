@@ -20,10 +20,13 @@ image_path = "E:\Dataset\DR\DeepDr\Onsite-Challenge1-2-Evaluation/16/16_l1.jpg"
 model = FQEModel()
 
 ''' Loading weights'''
-model.eff_model.load("checkpoints_isbi/_ckpt_epoch_2.ckpt")
+# model.model.load("checkpoints_isbi/_ckpt_epoch_2.ckpt")
 # Load state_dict
-# model.load_state_dict(torch.load('checkpoints_isbi/_ckpt_epoch_2.ckpt'))
-# model.load_from_checkpoint("checkpoints_isbi/_ckpt_epoch_2.ckpt")#'checkpoints_isbi/fqe_isbi_acc_1.0_fold_2.pt')
+# model.eff_model = torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt')
+# model.load_state_dict(torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt'))
+# m = torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt')
+# model.load_state_dict("checkpoints_isbi/fqe_isbi_acc_1.0_fold_3.pt")
+model.load_from_checkpoint("checkpoints_isbi/fqe_isbi_acc_1.0_fold_3.pt")#'checkpoints_isbi/fqe_isbi_acc_1.0_fold_2.pt')
 model.freeze()
 
 def test_isbi(trainer, model, dataset_test):
