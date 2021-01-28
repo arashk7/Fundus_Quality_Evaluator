@@ -8,7 +8,7 @@ from clarity.clarity_isbi import CLAModel,Dataset_ISBI
 '''params'''
 img_size = 300
 batch_size=4
-
+ 
 ISBI_TRAIN_PATH = 'E:\Dataset\DR\DeepDr\merged_tr_vl'
 ISBI_TEST_PATH = 'E:\Dataset\DR\DeepDr\Onsite-Challenge1-2-Evaluation'
 
