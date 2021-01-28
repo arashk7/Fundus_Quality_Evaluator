@@ -7,3 +7,6 @@ fqe_eff/init.ckpt
 .idea/modules.xml
 .idea/vcs.xml
 .idea/workspace.xml
+clarity/clarity_isbi.py
+clarity/init.ckpt
+clarity/__pycache__/clarity_isbi.cpython-37.pyc

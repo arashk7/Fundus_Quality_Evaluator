@@ -3,7 +3,7 @@ import pytorch_lightning as pl
 from PIL import Image
 import torch
 import torchvision.transforms as transforms
-from fqe_eff.fqe_isbi import FQEModel,Dataset_ISBI
+from clarity.clarity_isbi import CLAModel,Dataset_ISBI
 
 '''params'''
 img_size = 300
@@ -14,10 +14,10 @@ ISBI_TEST_PATH = 'E:\Dataset\DR\DeepDr\Onsite-Challenge1-2-Evaluation'
 
 
 '''Sample image path'''
-image_path = "E:\Dataset\DR\DeepDr\Onsite-Challenge1-2-Evaluation/16/16_l1.jpg"
+image_path = "E:\Dataset\DR\DeepDr\Onsite-Challenge1-2-Evaluation/13/13_l1.jpg"
 
 ''' Instanciate an object from FQEModel'''
-model = FQEModel()
+model = CLAModel()
 
 ''' Loading weights'''
 # model.model.load("checkpoints_isbi/_ckpt_epoch_2.ckpt")
@@ -26,7 +26,7 @@ model = FQEModel()
 # model.load_state_dict(torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt'))
 # m = torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt')
 # model.load_state_dict("checkpoints_isbi/fqe_isbi_acc_1.0_fold_3.pt")
-model.load_from_checkpoint("checkpoints_isbi/fqe_isbi_acc_1.0_fold_3.pt")#'checkpoints_isbi/fqe_isbi_acc_1.0_fold_2.pt')
+model.load_from_checkpoint("checkpoints_isbi/clarity_isbi_acc_0.0_fold_0.pt")#'checkpoints_isbi/fqe_isbi_acc_1.0_fold_2.pt')
 model.freeze()
 
 def test_isbi(trainer, model, dataset_test):
