@@ -209,7 +209,7 @@ class FQEModel(pl.LightningModule):
         return {'log': {'test_loss': loss, 'test_epoch_acc': accuracy, 'test_epoch_qkappa': qkappa}}
 
     def predict(self, x):
-        return self.model(x)
+        return self(x)
 
 class Dataset_ISBI(data.Dataset):
     def __init__(self, csv_path, images_path, transform=None):

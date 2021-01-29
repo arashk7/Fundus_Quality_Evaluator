@@ -8,7 +8,7 @@ from clarity.clarity_isbi import CLAModel,Dataset_ISBI
 '''params'''
 img_size = 300
 batch_size=4
- 
+
 ISBI_TRAIN_PATH = 'E:\Dataset\DR\DeepDr\merged_tr_vl'
 ISBI_TEST_PATH = 'E:\Dataset\DR\DeepDr\Onsite-Challenge1-2-Evaluation'
 
@@ -26,8 +26,9 @@ model = CLAModel()
 # model.load_state_dict(torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt'))
 # m = torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt')
 # model.load_state_dict("checkpoints_isbi/fqe_isbi_acc_1.0_fold_3.pt")
-model.load_from_checkpoint("checkpoints_isbi/clarity_isbi_acc_0.0_fold_0.pt")#'checkpoints_isbi/fqe_isbi_acc_1.0_fold_2.pt')
-model.freeze()
+model.load_from_checkpoint("checkpoints_isbi/clarity_isbi_acc_0.0_fold_1.pt")#'checkpoints_isbi/fqe_isbi_acc_1.0_fold_2.pt')
+# model.freeze()
+print(model.summarize())
 
 def test_isbi(trainer, model, dataset_test):
     test_loader = torch.utils.data.DataLoader(dataset_test,  # num_workers= 16,
@@ -72,9 +73,10 @@ c = torch.cat((img, img,img,img), 0)
 
 
 ''' Predict the quality of Fundus image'''
-out = model.predict(c)
-pred = torch.reshape(out.argmax(dim=1, keepdim=True), ( 4,1))
 
-print(pred)
+out = model.predict(img)
+# pred = torch.reshape(out.argmax(dim=1, keepdim=True), ( 4,1))
+
+print(out)
 
 
