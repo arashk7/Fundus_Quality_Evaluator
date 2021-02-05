@@ -26,8 +26,9 @@ model = CLAModel()
 # model.eff_model = torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt')
 # model.load_state_dict(torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt'))
 # m = torch.load('checkpoints_isbi/_ckpt_epoch_3.ckpt')
-model.load_state_dict(torch.load("checkpoints_isbi/SAN-340_loss_0.062_fold_2.pt"))
+model.model.load_state_dict(torch.load("checkpoints_isbi/SAN-340_loss_0.062_fold_2.pt"))
 # model.load_from_checkpoint("checkpoints_isbi/SAN-340_loss_0.062_fold_2.pt")#'checkpoints_isbi/fqe_isbi_acc_1.0_fold_2.pt')
+# torch.load()
 # model.freeze()
 print(model.summarize())
 
@@ -52,7 +53,7 @@ isbi_dataset_test = Dataset_ISBI(os.path.join(ISBI_TEST_PATH, 'Onsite-Challenge1
                                      transform=transform_test)
 trainer = pl.Trainer(gpus=1)
 
-# test_isbi(trainer, model, isbi_dataset_test)
+test_isbi(trainer, model, isbi_dataset_test)
 
 
 '''Load a test image'''
@@ -76,6 +77,7 @@ img1 = img1.unsqueeze(0)
 # c = torch.cat((img, img,img,img), 0)
 #
 model.freeze()
+model.eval()
 ''' Predict the quality of Fundus image'''
 
 out = model.predict(img0)
